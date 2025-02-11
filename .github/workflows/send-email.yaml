@@ -19,6 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup-java
     steps:
+      - name: Verify External Jar Exists
+        run: ls -R .github/actions/external-jar
+        
       - name: Create Java Email Sender File
         run: |
           cat > SendEmail.java << 'EOF'
