@@ -20,7 +20,7 @@ jobs:
     needs: setup-java
     steps:
       - name: Verify External Jar Exists
-        run: ls -R .github/actions/external-jar
+        run: ls -R .github/external-jar
         
       - name: Create Java Email Sender File
         run: |
