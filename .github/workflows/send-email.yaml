@@ -73,10 +73,10 @@ jobs:
           EOF
 
       - name: Compile Java Program
-        run: javac -cp .:.github/actions/external-jar/javax.mail-1.6.2.jar -d . SendEmail.java
+        run: javac -cp ".github/actions/external-jar/javax.mail-1.6.2.jar" -d . SendEmail.java
 
       - name: Run Java Email Sender
-        run: java -cp .github/actions/external-jar/javax.mail-1.6.2.jar SendEmail
+        run: java -cp ".github/actions/external-jar/javax.mail-1.6.2.jar" SendEmail
         env:
           SMTP_HOST: "smtp.gmail.com"
           SMTP_PORT: "587"
