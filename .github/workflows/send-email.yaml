@@ -21,11 +21,28 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          lfs: true  # Fetches large files if stored in Git LFS
-          
-      - name: Verify External Jar Exists
-        run: ls -R .github/external-jar
+
+      - name: Create Maven Project
+        run: |
+          mkdir -p email-sender/src/main/java
+          cat > email-sender/pom.xml << 'EOF'
+          <project xmlns="http://maven.apache.org/POM/4.0.0" 
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>com.example</groupId>
+              <artifactId>email-sender</artifactId>
+              <version>1.0-SNAPSHOT</version>
+
+              <dependencies>
+                  <dependency>
+                      <groupId>com.sun.mail</groupId>
+                      <artifactId>javax.mail</artifactId>
+                      <version>1.6.2</version>
+                  </dependency>
+              </dependencies>
+          </project>
+          EOF
         
       - name: Create Java Email Sender File
         run: |
@@ -72,15 +89,33 @@ jobs:
           }
           EOF
 
-      - name: Compile Java Program
-        run: javac -cp ".github/actions/external-jar/javax.mail-1.6.2.jar" -d . SendEmail.java
+      - name: Compile Java Program with Maven
+        run: |
+          cd email-sender
+          mvn compile
 
-      - name: Run Java Email Sender
-        run: java -cp ".github/actions/external-jar/javax.mail-1.6.2.jar" SendEmail
-        env:
-          SMTP_HOST: "smtp.gmail.com"
-          SMTP_PORT: "587"
-          SMTP_USERNAME: "amrutpatange2@gmail.com"
-          EMAIL_SENDER: "amrutpatange2@gmail.com"
-          EMAIL_RECIPIENTS: "amrutpatange4598@gmail.com"
-          EMAIL_BODY: "Demo Body"
+      - name: Run Java Email Sender with Maven
+        run: |
+          cd email-sender
+          mvn exec:java -Dexec.mainClass="SendEmail"
+          env:
+            SMTP_HOST: "smtp.gmail.com"
+            SMTP_PORT: "587"
+            SMTP_USERNAME: "amrutpatange2@gmail.com"
+            EMAIL_SENDER: "amrutpatange2@gmail.com"
+            EMAIL_RECIPIENTS: "amrutpatange4598@gmail.com"
+            EMAIL_BODY: "Demo Body"
+
+        
+      # - name: Compile Java Program
+      #   run: javac -cp ".github/actions/external-jar/javax.mail-1.6.2.jar" -d . SendEmail.java
+
+      # - name: Run Java Email Sender
+      #   run: java -cp ".github/actions/external-jar/javax.mail-1.6.2.jar" SendEmail
+      #   env:
+      #     SMTP_HOST: "smtp.gmail.com"
+      #     SMTP_PORT: "587"
+      #     SMTP_USERNAME: "amrutpatange2@gmail.com"
+      #     EMAIL_SENDER: "amrutpatange2@gmail.com"
+      #     EMAIL_RECIPIENTS: "amrutpatange4598@gmail.com"
+      #     EMAIL_BODY: "Demo Body"
