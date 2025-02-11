@@ -1,0 +1,54 @@
+name: Check Old Open Branches
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    permissions:
+      contents: write
+      id-token: write
+    name: Check old branches
+    runs-on: ubuntu-latest  # Updated to use a general runner
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check Old Branches
+        run: |
+          branches=$(git branch -r | grep -v '\->')
+          old_branches=()
+          branch_details="Old Branches Report - $(date)\n--------------------------------\n"
+
+          for branch in $branches; do
+            branch_name=$branch
+            commit_info=$(git show -s --format="%ci %an" "origin/$branch_name")
+            commit_date=$(echo "$commit_info" | awk '{print $1, $2, $3}')
+            last_author=$(echo "$commit_info" | awk '{$1=$2=$3=""; print $0}')
+            commit_timestamp=$(date -d "$commit_date" +%s)
+            current_timestamp=$(date +%s)
+            time_diff=$(( $current_timestamp - $commit_timestamp ))
+
+            if [ $time_diff -ne 0 ]; then
+              days_old=$(( time_diff / (60 * 60 * 24) ))
+            else
+              days_old=0
+            fi 
+
+            if [ $days_old -ge 4 ]; then
+              old_branches+=("$branch_name, Days Old: $days_old, Last Author: $last_author")
+              branch_details+="$branch_name - Days Old: $days_old - Last Author: $last_author\n"
+            fi
+          done
+
+          if [ ${#old_branches[@]} -eq 0 ]; then
+            branch_details+="No branches older than 4 days were found."
+          fi
+
+          echo "### ${#old_branches[@]} Old Branches Identified! 🚀" >> $GITHUB_STEP_SUMMARY
+          for old_branch in "${old_branches[@]}"; do 
+            echo "- $old_branch" >> $GITHUB_STEP_SUMMARY
+          done
