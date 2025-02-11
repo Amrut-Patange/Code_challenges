@@ -19,6 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup-java
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          lfs: true  # Fetches large files if stored in Git LFS
+          
       - name: Verify External Jar Exists
         run: ls -R .github/external-jar
         
