@@ -19,7 +19,7 @@ jobs:
 
       - name: Check Old Branches
         run: |
-          branches=$(git branch -r | grep -v '\->')
+          branches=$(git branch -r | awk '{print $1}' | sed 's|origin/||')
           old_branches=()
           branch_details="Old Branches Report - $(date)\n--------------------------------\n"
 
